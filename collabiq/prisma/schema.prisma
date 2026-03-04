@@ -1,0 +1,128 @@
+generator client  { provider = "prisma-client-js" }
+datasource db     { provider = "postgresql"; url = env("DATABASE_URL") }
+
+enum Platform  { INSTAGRAM; YOUTUBE }
+enum RiskLevel { LOW; MODERATE; HIGH }
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  reports   Report[]
+}
+
+model Creator {
+  id          String   @id @default(cuid())
+  handle      String
+  displayName String?
+  niche       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  platformAccounts  PlatformAccount[]
+  rawMetrics        RawMetrics[]
+  engineeredMetrics EngineeredMetrics[]
+  scores            Score[]
+  benchmarks        Benchmark[]
+  reports           Report[]
+}
+
+model PlatformAccount {
+  id           String    @id @default(cuid())
+  platform     Platform
+  platformId   String
+  accessToken  String
+  refreshToken String?
+  tokenExpiry  DateTime?
+  scope        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  creatorId    String
+  creator      Creator   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  @@unique([platform, platformId])
+  @@index([creatorId])
+}
+
+model RawMetrics {
+  id              String   @id @default(cuid())
+  platform        Platform
+  snapshotAt      DateTime @default(now())
+  followers       Int
+  following       Int?
+  totalPosts      Int
+  avgLikes        Float
+  avgComments     Float
+  avgShares       Float?
+  avgViews        Float?
+  reachRate       Float?
+  impressionRate  Float?
+  storyViews      Float?
+  subscribers     Int?
+  avgWatchTime    Float?
+  avgRetention    Float?
+  totalVideoCount Int?
+  creatorId       String
+  creator         Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  @@index([creatorId, snapshotAt])
+}
+
+model EngineeredMetrics {
+  id                   String   @id @default(cuid())
+  calculatedAt         DateTime @default(now())
+  engagementRate       Float
+  growthRate           Float
+  consistencyScore     Float
+  audienceQualityScore Float
+  postingFrequency     Float
+  volatility           Float
+  suspiciousSpike      Boolean
+  fakeBotRiskScore     Float
+  creatorId            String
+  creator              Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  @@index([creatorId])
+}
+
+model Score {
+  id              String   @id @default(cuid())
+  calculatedAt    DateTime @default(now())
+  investmentScore Float
+  roiPotential    Float
+  riskScore       Float
+  compositeScore  Float
+  creatorId       String
+  creator         Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  @@index([creatorId])
+}
+
+model Benchmark {
+  id             String   @id @default(cuid())
+  niche          String
+  calculatedAt   DateTime @default(now())
+  percentileRank Float
+  zScore         Float
+  nicheAvgEr     Float
+  nicheAvgGrowth Float
+  comparison     Json
+  creatorId      String
+  creator        Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  @@index([creatorId, niche])
+}
+
+model Report {
+  id                String    @id @default(cuid())
+  generatedAt       DateTime  @default(now())
+  riskLevel         RiskLevel
+  rawMetrics        Json
+  engineeredMetrics Json
+  scores            Json
+  benchmark         Json
+  riskAnalysis      Json
+  aiReport          Json
+  creatorId         String
+  creator           Creator   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  userId            String?
+  user              User?     @relation(fields: [userId], references: [id])
+  @@index([creatorId])
+  @@index([userId])
+}
