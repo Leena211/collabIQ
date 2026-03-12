@@ -4,11 +4,20 @@ import { detectNiche }                from "./nicheDetection.service";
 import { estimateInterestClusters }   from "./interestCluster.estimator";
 import { scorePurchaseIntent }        from "./purchaseIntent.scorer";
 import { scoreEngagementQuality }     from "./engagementQuality.scorer";
+import { sentimentScorer } from "./sentimentScorer";
+import { authenticityScorer } from "./authenticityScorer";
+import { engagementScorer } from "./engagementScorer";
+import { riskIndicatorScore } from "./RiskIndicatorScore";
 
 export { detectNiche }              from "./nicheDetection.service";
 export { estimateInterestClusters } from "./interestCluster.estimator";
 export { scorePurchaseIntent }      from "./purchaseIntent.scorer";
 export { scoreEngagementQuality }   from "./engagementQuality.scorer";
+export { sentimentScorer } from "./sentimentScorer";
+export { authenticityScorer } from "./authenticityScorer";
+export { engagementScorer } from "./engagementScorer";
+export { riskIndicatorScore } from "./RiskIndicatorScore";
+
 
 export interface AudienceIntelligenceInput {
   storedNiche:          string | null;
