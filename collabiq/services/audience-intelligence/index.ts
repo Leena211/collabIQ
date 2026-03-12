@@ -9,6 +9,8 @@ export { detectNiche }              from "./nicheDetection.service";
 export { estimateInterestClusters } from "./interestCluster.estimator";
 export { scorePurchaseIntent }      from "./purchaseIntent.scorer";
 export { scoreEngagementQuality }   from "./engagementQuality.scorer";
+export * from "./authenticity.scorer";
+
 
 export interface AudienceIntelligenceInput {
   storedNiche:          string | null;
