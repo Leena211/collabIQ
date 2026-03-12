@@ -1,26 +1,35 @@
 // benchmark-intelligence/index.ts — barrel export + master benchmark fn
 import { BenchmarkOutput } from "@/types/global.types";
 import { resolveNiche, NICHE_BENCHMARKS, compareToNiche } from "./niche.benchmark";
-import { classifyTier }                                    from "./tier.benchmark";
+import { classifyTier, getTierProfile }                   from "./tier.benchmark";
 import { adjustBenchmarkForPlatform }                     from "./platform.benchmark";
 import type { Platform } from "@/types/global.types";
 
+// Supporting modules
+import { validateBenchmark } from "./validation";
+import { authMiddleware }    from "./auth.middleware";
+import { logInfo, logError, logBenchmarkRun } from "./logger";
+import type { BenchmarkInput } from "./types";
+
+// Barrel exports
 export { resolveNiche, NICHE_BENCHMARKS } from "./niche.benchmark";
 export { classifyTier, getTierProfile }   from "./tier.benchmark";
 export { adjustBenchmarkForPlatform }     from "./platform.benchmark";
-
-export interface BenchmarkInput {
-  engagementRate:       number;
-  growthRate:           number;
-  consistencyScore:     number;
-  audienceQualityScore: number;
-  postingFrequency:     number;
-  followers:            number;
-  niche:                string;
-  platform:             Platform;
-}
+export { validateBenchmark }              from "./validation";
+export { authMiddleware }                 from "./auth.middleware";
+export { logInfo, logError, logBenchmarkRun } from "./logger";
+export type { BenchmarkInput }            from "./types";
 
 export function runBenchmark(input: BenchmarkInput): BenchmarkOutput {
+  // Validate input before processing
+  const check = validateBenchmark(input);
+  if (!check.valid) {
+    logError("Invalid benchmark input", check.error);
+    throw new Error(check.error);
+  }
+
+  logInfo("Benchmark run started");
+
   const nicheKey = resolveNiche(input.niche);
   const bench    = NICHE_BENCHMARKS[nicheKey];
   const tier     = classifyTier(input.followers);
@@ -40,7 +49,7 @@ export function runBenchmark(input: BenchmarkInput): BenchmarkOutput {
   // Simplified percentile from composite z
   const percentileRank = comparison.engagementRate.percentile;
 
-  return {
+  const result: BenchmarkOutput = {
     niche:          nicheKey,
     tier,
     platform:       input.platform,
@@ -50,4 +59,9 @@ export function runBenchmark(input: BenchmarkInput): BenchmarkOutput {
     nicheAvgGrowth: bench.growthRate.mean,
     comparison,
   };
+
+  logBenchmarkRun(input, result);
+  logInfo("Benchmark run completed successfully");
+
+  return result;
 }
