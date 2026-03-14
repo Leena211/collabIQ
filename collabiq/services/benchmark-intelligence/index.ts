@@ -8,6 +8,9 @@ import type { Platform } from "@/types/global.types";
 export { resolveNiche, NICHE_BENCHMARKS } from "./niche.benchmark";
 export { classifyTier, getTierProfile }   from "./tier.benchmark";
 export { adjustBenchmarkForPlatform }     from "./platform.benchmark";
+export * from "./benchmark.utils";
+export * from "./benchmark.types";
+export * from "./benchmark.engine";
 
 export interface BenchmarkInput {
   engagementRate:       number;
